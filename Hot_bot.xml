@@ -56,18 +56,23 @@
                         <field name="CURRENCY_LIST">USD</field>
                         <field name="RESTARTONERROR">true</field>
                         <field name="TIME_MACHINE_ENABLED">false</field>
+                        <field name="DURATION_TYPE_LIST">t</field>
                         <value name="DURATION">
-                          <block type="math_number" id="num_duration">
+                          <shadow type="math_number" id="s_dur">
                             <field name="NUM">5</field>
-                          </block>
+                          </shadow>
                         </value>
                         <value name="AMOUNT">
-                          <block type="variables_get" id="get_curr_stake_amt">
+                          <shadow type="math_number" id="s_amt">
+                            <field name="NUM">1</field>
+                          </shadow>
+                          <block type="variables_get" id="v_amt">
                             <field name="VAR" id="mIse_Actuelle" variabletype="">Mise_Actuelle</field>
                           </block>
                         </value>
                         <statement name="PURCHASE">
-                          <block type="controls_if" id="rsi_call_condition">
+                          <block type="controls_if" id="purchase_conditions">
+                            <mutation elseif="1" else="0"></mutation>
                             <value name="IF0">
                               <block type="logic_compare" id="cmp_call_rsi">
                                 <field name="OP">LT</field>
@@ -89,35 +94,32 @@
                                 <field name="PURCHASE_LIST">CALL</field>
                               </block>
                             </statement>
-                            <next>
-                              <block type="controls_if" id="rsi_put_condition">
-                                <value name="IF0">
-                                  <block type="logic_compare" id="cmp_put_rsi">
-                                    <field name="OP">GT</field>
-                                    <value name="A">
-                                      <block type="rsi" id="rsi_put">
-                                        <field name="INPUT">candles</field>
-                                        <field name="PERIOD">14</field>
-                                      </block>
-                                    </value>
-                                    <value name="B">
-                                      <block type="math_number" id="num_rsi_put">
-                                        <field name="NUM">70</field>
-                                      </block>
-                                    </value>
+                            <value name="IF1">
+                              <block type="logic_compare" id="cmp_put_rsi">
+                                <field name="OP">GT</field>
+                                <value name="A">
+                                  <block type="rsi" id="rsi_put">
+                                    <field name="INPUT">candles</field>
+                                    <field name="PERIOD">14</field>
                                   </block>
                                 </value>
-                                <statement name="DO0">
-                                  <block type="purchase" id="purchase_put">
-                                    <field name="PURCHASE_LIST">PUT</field>
+                                <value name="B">
+                                  <block type="math_number" id="num_rsi_put">
+                                    <field name="NUM">70</field>
                                   </block>
-                                </statement>
+                                </value>
                               </block>
-                            </next>
+                            </value>
+                            <statement name="DO1">
+                              <block type="purchase" id="purchase_put">
+                                <field name="PURCHASE_LIST">PUT</field>
+                              </block>
+                            </statement>
                           </block>
                         </statement>
                         <statement name="AFTER_PURCHASE">
                           <block type="controls_if" id="check_result_if">
+                            <mutation elseif="0" else="0"></mutation>
                             <value name="IF0">
                               <block type="logic_compare" id="cmp_win">
                                 <field name="OP">EQ</field>
@@ -158,6 +160,7 @@
                             </statement>
                             <next>
                               <block type="controls_if" id="check_loss_if">
+                                <mutation elseif="0" else="0"></mutation>
                                 <value name="IF0">
                                   <block type="logic_compare" id="cmp_loss">
                                     <field name="OP">EQ</field>
@@ -175,6 +178,7 @@
                                 </value>
                                 <statement name="DO0">
                                   <block type="controls_if" id="check_max_step_if">
+                                    <mutation elseif="0" else="1"></mutation>
                                     <value name="IF0">
                                       <block type="logic_compare" id="cmp_step">
                                         <field name="OP">LTE</field>
