@@ -1,0 +1,271 @@
+<xml xmlns="http://www.w3.org/1999/xhtml">
+  <variables>
+    <variable type="" id="mIse_Initiale">Mise_Initiale</variable>
+    <variable type="" id="mIse_Actuelle">Mise_Actuelle</variable>
+    <variable type="" id="mUltiplicateur">Multiplicateur_Martingale</variable>
+    <variable type="" id="mA_Rebonds">Max_Rebonds</variable>
+    <variable type="" id="eTape_Actuelle">Etape_Actuelle</variable>
+  </variables>
+  <block type="variables_set" id="set_init_stake" x="20" y="20">
+    <field name="VAR" id="mIse_Initiale" variabletype="">Mise_Initiale</field>
+    <value name="VALUE">
+      <block type="math_number" id="num_init_stake">
+        <field name="NUM">1</field>
+      </block>
+    </value>
+    <next>
+      <block type="variables_set" id="set_curr_stake">
+        <field name="VAR" id="mIse_Actuelle" variabletype="">Mise_Actuelle</field>
+        <value name="VALUE">
+          <block type="variables_get" id="get_init_stake">
+            <field name="VAR" id="mIse_Initiale" variabletype="">Mise_Initiale</field>
+          </block>
+        </value>
+        <next>
+          <block type="variables_set" id="set_multiplier">
+            <field name="VAR" id="mUltiplicateur" variabletype="">Multiplicateur_Martingale</field>
+            <value name="VALUE">
+              <block type="math_number" id="num_mult">
+                <field name="NUM">2.2</field>
+              </block>
+            </value>
+            <next>
+              <block type="variables_set" id="set_max_martingale">
+                <field name="VAR" id="mA_Rebonds" variabletype="">Max_Rebonds</field>
+                <value name="VALUE">
+                  <block type="math_number" id="num_max_mart">
+                    <field name="NUM">4</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="variables_set" id="set_step">
+                    <field name="VAR" id="eTape_Actuelle" variabletype="">Etape_Actuelle</field>
+                    <value name="VALUE">
+                      <block type="math_number" id="num_step">
+                        <field name="NUM">1</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="trade" id="main_trade_block">
+                        <field name="MARKET_LIST">synthetic_index</field>
+                        <field name="SUBMARKET_LIST">random_index</field>
+                        <field name="SYMBOL_LIST">R_100</field>
+                        <field name="TRADETYPECAT_LIST">callput</field>
+                        <field name="TRADETYPE_LIST">risefall</field>
+                        <field name="PAYOUTTYPE_LIST">stake</field>
+                        <field name="CURRENCY_LIST">USD</field>
+                        <field name="RESTARTONERROR">true</field>
+                        <field name="TIME_MACHINE_ENABLED">false</field>
+                        <value name="DURATION">
+                          <block type="math_number" id="num_duration">
+                            <field name="NUM">5</field>
+                          </block>
+                        </value>
+                        <value name="AMOUNT">
+                          <block type="variables_get" id="get_curr_stake_amt">
+                            <field name="VAR" id="mIse_Actuelle" variabletype="">Mise_Actuelle</field>
+                          </block>
+                        </value>
+                        <statement name="PURCHASE">
+                          <block type="controls_if" id="rsi_call_condition">
+                            <value name="IF0">
+                              <block type="logic_compare" id="cmp_call_rsi">
+                                <field name="OP">LT</field>
+                                <value name="A">
+                                  <block type="rsi" id="rsi_call">
+                                    <field name="INPUT">candles</field>
+                                    <field name="PERIOD">14</field>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="math_number" id="num_rsi_call">
+                                    <field name="NUM">30</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <statement name="DO0">
+                              <block type="purchase" id="purchase_call">
+                                <field name="PURCHASE_LIST">CALL</field>
+                              </block>
+                            </statement>
+                            <next>
+                              <block type="controls_if" id="rsi_put_condition">
+                                <value name="IF0">
+                                  <block type="logic_compare" id="cmp_put_rsi">
+                                    <field name="OP">GT</field>
+                                    <value name="A">
+                                      <block type="rsi" id="rsi_put">
+                                        <field name="INPUT">candles</field>
+                                        <field name="PERIOD">14</field>
+                                      </block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="math_number" id="num_rsi_put">
+                                        <field name="NUM">70</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <statement name="DO0">
+                                  <block type="purchase" id="purchase_put">
+                                    <field name="PURCHASE_LIST">PUT</field>
+                                  </block>
+                                </statement>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                        <statement name="AFTER_PURCHASE">
+                          <block type="controls_if" id="check_result_if">
+                            <value name="IF0">
+                              <block type="logic_compare" id="cmp_win">
+                                <field name="OP">EQ</field>
+                                <value name="A">
+                                  <block type="contract_check_result" id="check_win">
+                                    <field name="CHECK_RESULT">win</field>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="logic_boolean" id="bool_true_win">
+                                    <field name="BOOL">TRUE</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <statement name="DO0">
+                              <block type="variables_set" id="win_reset_stake">
+                                <field name="VAR" id="mIse_Actuelle" variabletype="">Mise_Actuelle</field>
+                                <value name="VALUE">
+                                  <block type="variables_get" id="get_init_stake_win">
+                                    <field name="VAR" id="mIse_Initiale" variabletype="">Mise_Initiale</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="variables_set" id="win_reset_step">
+                                    <field name="VAR" id="eTape_Actuelle" variabletype="">Etape_Actuelle</field>
+                                    <value name="VALUE">
+                                      <block type="math_number" id="num_win_step">
+                                        <field name="NUM">1</field>
+                                      </block>
+                                    </value>
+                                    <next>
+                                      <block type="tradeAgain" id="trade_again_win"></block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </statement>
+                            <next>
+                              <block type="controls_if" id="check_loss_if">
+                                <value name="IF0">
+                                  <block type="logic_compare" id="cmp_loss">
+                                    <field name="OP">EQ</field>
+                                    <value name="A">
+                                      <block type="contract_check_result" id="check_loss">
+                                        <field name="CHECK_RESULT">loss</field>
+                                      </block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="logic_boolean" id="bool_true_loss">
+                                        <field name="BOOL">TRUE</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <statement name="DO0">
+                                  <block type="controls_if" id="check_max_step_if">
+                                    <value name="IF0">
+                                      <block type="logic_compare" id="cmp_step">
+                                        <field name="OP">LTE</field>
+                                        <value name="A">
+                                          <block type="variables_get" id="get_step_loss">
+                                            <field name="VAR" id="eTape_Actuelle" variabletype="">Etape_Actuelle</field>
+                                          </block>
+                                        </value>
+                                        <value name="B">
+                                          <block type="variables_get" id="get_max_mart_loss">
+                                            <field name="VAR" id="mA_Rebonds" variabletype="">Max_Rebonds</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <statement name="DO0">
+                                      <block type="variables_set" id="loss_martingale_stake">
+                                        <field name="VAR" id="mIse_Actuelle" variabletype="">Mise_Actuelle</field>
+                                        <value name="VALUE">
+                                          <block type="math_round" id="round_mart">
+                                            <field name="OP">ROUND</field>
+                                            <value name="DIM">
+                                              <block type="math_arithmetic" id="arith_mart">
+                                                <field name="OP">MULTIPLY</field>
+                                                <value name="A">
+                                                  <block type="variables_get" id="get_curr_mart">
+                                                    <field name="VAR" id="mIse_Actuelle" variabletype="">Mise_Actuelle</field>
+                                                  </block>
+                                                </value>
+                                                <value name="B">
+                                                  <block type="variables_get" id="get_mult_mart">
+                                                    <field name="VAR" id="mUltiplicateur" variabletype="">Multiplicateur_Martingale</field>
+                                                  </block>
+                                                </value>
+                                              </block>
+                                            </value>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="math_change" id="loss_increase_step">
+                                            <field name="VAR" id="eTape_Actuelle" variabletype="">Etape_Actuelle</field>
+                                            <value name="DELTA">
+                                              <block type="math_number" id="num_step_inc">
+                                                <field name="NUM">1</field>
+                                              </block>
+                                            </value>
+                                            <next>
+                                              <block type="tradeAgain" id="trade_again_loss"></block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </statement>
+                                    <statement name="ELSE">
+                                      <block type="variables_set" id="max_loss_reset_stake">
+                                        <field name="VAR" id="mIse_Actuelle" variabletype="">Mise_Actuelle</field>
+                                        <value name="VALUE">
+                                          <block type="variables_get" id="get_init_stake_max">
+                                            <field name="VAR" id="mIse_Initiale" variabletype="">Mise_Initiale</field>
+                                          </block>
+                                        </value>
+                                        <next>
+                                          <block type="variables_set" id="max_loss_reset_step">
+                                            <field name="VAR" id="eTape_Actuelle" variabletype="">Etape_Actuelle</field>
+                                            <value name="VALUE">
+                                              <block type="math_number" id="num_reset_step">
+                                                <field name="NUM">1</field>
+                                              </block>
+                                            </value>
+                                            <next>
+                                              <block type="tradeAgain" id="trade_again_max_loss"></block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </statement>
+                                  </block>
+                                </statement>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>
